@@ -16,9 +16,9 @@ app.secret_key = os.getenv('SECRET_KEY')
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quotations.db'
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(BASE_DIR, "quotations.db")}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
 
 
 class Quotation(db.Model):
