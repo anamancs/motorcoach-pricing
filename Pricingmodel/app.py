@@ -12,7 +12,6 @@ load_dotenv()
 
 
 app = Flask(__name__)
-#app.secret_key = 'super-secret-key-2026'
 app.secret_key = os.getenv('SECRET_KEY')
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
@@ -76,7 +75,6 @@ PRICING_MODELS = {
     }
 }
 
-#GOOGLE_API_KEY = 'AIzaSyAqRf0bx5hxH-CAVhR7KmqZgCilEzKQZsM'
 
 
 def get_day_type(date_str: str) -> str:
