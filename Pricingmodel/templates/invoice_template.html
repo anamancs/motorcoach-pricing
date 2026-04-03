@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Georgia, serif;
+      background: #ffffff;
+      color: #1a1a2e;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 44px 50px;
+    }
+
+    /* ── HEADER ── */
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 0;
+    }
+    .header-table td { vertical-align: middle; padding: 0; }
+    .header-table td:last-child { text-align: right; }
+
+    .company-name {
+      font-size: 22px;
+      font-weight: bold;
+      color: #1a1a2e;
+      letter-spacing: 0.01em;
+    }
+    .company-tagline {
+      font-size: 9.5px;
+      color: #999;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+    .doc-label {
+      font-size: 9px;
+      font-weight: bold;
+      color: #c0932a;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .charter-id {
+      font-size: 15px;
+      font-weight: bold;
+      color: #1a1a2e;
+    }
+    .issue-date {
+      font-size: 10px;
+      color: #aaa;
+      margin-top: 2px;
+    }
+
+    /* ── RULED LINES ── */
+    .rule-thick {
+      border: none;
+      border-top: 3px solid #1a1a2e;
+      margin: 16px 0 4px;
+    }
+    .rule-gold {
+      border: none;
+      border-top: 4px solid #c0932a;
+      margin: 0 0 24px;
+    }
+    .rule-thin {
+      border: none;
+      border-top: 1px solid #e0e0e0;
+      margin: 22px 0;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 8.5px;
+      font-weight: bold;
+      color: #c0932a;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 10px;
+    }
+
+    /* ── CLIENT / TRIP INFO: 3-column table ── */
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 22px;
+    }
+    .meta-table td {
+      vertical-align: top;
+      padding: 10px 14px;
+      border: 1px solid #e8e8e8;
+      width: 33.33%;
+    }
+    .meta-table tr:nth-child(even) td { background: #f9f9f9; }
+    .meta-label {
+      display: block;
+      font-size: 8.5px;
+      font-weight: bold;
+      color: #c0932a;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 3px;
+    }
+    .meta-value {
+      font-size: 13px;
+      font-weight: bold;
+      color: #1a1a2e;
+    }
+
+    /* ── ROUTE SECTION ── */
+    .route-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 22px;
+    }
+    .route-table td { vertical-align: middle; padding: 16px 20px; }
+    .route-table td.arrow-cell {
+      text-align: center;
+      width: 44px;
+      font-size: 22px;
+      color: #c0932a;
+      font-weight: bold;
+      padding: 0;
+    }
+    .route-lbl {
+      display: block;
+      font-size: 8px;
+      font-weight: bold;
+      color: #c0932a;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 4px;
+    }
+    .route-val {
+      font-size: 12.5px;
+      font-weight: bold;
+      color: #ffffff;
+      line-height: 1.35;
+    }
+
+    /* ── TOTAL ── */
+    .total-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #c0932a;
+      margin-bottom: 26px;
+    }
+    .total-table td { padding: 16px 20px; vertical-align: middle; }
+    .total-table td:last-child { text-align: right; }
+    .total-lbl {
+      font-size: 10px;
+      font-weight: bold;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .total-sub {
+      font-size: 9.5px;
+      color: #bbb;
+      margin-top: 2px;
+    }
+    .total-amt {
+      font-size: 32px;
+      font-weight: bold;
+      color: #c0932a;
+      font-family: Georgia, serif;
+    }
+
+    /* ── INSTRUCTIONS ── */
+    .instr-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 26px;
+    }
+    .instr-table td {
+      vertical-align: top;
+      width: 50%;
+      padding: 0;
+    }
+    .instr-table td:first-child { padding-right: 10px; }
+    .instr-table td:last-child  { padding-left: 10px; }
+
+    .instr-lbl {
+      display: block;
+      font-size: 8.5px;
+      font-weight: bold;
+      color: #c0932a;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      margin-bottom: 6px;
+    }
+    .instr-box {
+      border-top: 3px solid #c0932a;
+      border-left: 1px solid #ddd;
+      border-right: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      padding: 12px 14px;
+      background: #fafafa;
+      min-height: 100px;
+      font-size: 12px;
+      color: #444;
+      line-height: 1.7;
+      font-family: Georgia, serif;
+    }
+
+    /* ── DISCLAIMER ── */
+    .disclaimer-lbl {
+      font-size: 8.5px;
+      font-weight: bold;
+      color: #1a1a2e;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+    .disclaimer-box {
+      border-left: 4px solid #c0932a;
+      padding: 8px 14px;
+      font-size: 10px;
+      color: #888;
+      line-height: 1.75;
+      background: #fafafa;
+    }
+
+    /* ── FOOTER ── */
+    .footer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      border-top: 3px solid #1a1a2e;
+      padding-top: 14px;
+    }
+    .footer-table td { vertical-align: middle; padding-top: 14px; }
+    .footer-table td:last-child { text-align: right; }
+    .footer-thank {
+      font-style: italic;
+      font-size: 13px;
+      color: #555;
+    }
+    .footer-brand {
+      font-size: 8.5px;
+      font-weight: bold;
+      color: #c0932a;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+    .footer-tagline {
+      font-size: 9px;
+      color: #bbb;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <table class="header-table">
+    <tr>
+      <td>
+        <div class="company-name">Anaman Concierge Services</div>
+        <div class="company-tagline">Premium Charter &amp; Transportation Services</div>
+      </td>
+      <td>
+        <div class="doc-label">Charter Invoice</div>
+        <div class="charter-id">{{ quotation.charter_id }}</div>
+        <div class="issue-date">Issued: {{ quotation.created_at.strftime('%B %d, %Y') }}</div>
+      </td>
+    </tr>
+  </table>
+
+  <hr class="rule-thick">
+  <hr class="rule-gold">
+
+  <!-- CLIENT + TRIP META: 3 columns x 2 rows -->
+  <div class="section-label">Booking Details</div>
+  <table class="meta-table">
+    <tr>
+      <td>
+        <span class="meta-label">Client</span>
+        <span class="meta-value">{{ quotation.client or '—' }}</span>
+      </td>
+      <td>
+        <span class="meta-label">Passengers</span>
+        <span class="meta-value">{{ quotation.passengers or '—' }}</span>
+      </td>
+      <td>
+        <span class="meta-label">Service</span>
+        <!-- <span class="meta-value">{{ quotation.pricing_model | title }}</span> -->
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="meta-label">Trip Date</span>
+        <span class="meta-value">{{ quotation.trip_date }}</span>
+      </td>
+      <td>
+        <span class="meta-label">Departure Time</span>
+        <span class="meta-value">{{ quotation.start_time }}</span>
+      </td>
+      <td>
+        <span class="meta-label">Trip Type</span>
+        <span class="meta-value">{{ quotation.trip_type | title }}</span>
+      </td>
+    </tr>
+  </table>
+
+  <!-- ROUTE -->
+  <div class="section-label">Route</div>
+  <table width="100%" cellspacing="0" cellpadding="0" bgcolor="#1a1a2e" style="margin-bottom: 22px;">
+    <tr>
+      <td bgcolor="#1a1a2e" style="padding: 16px 20px; vertical-align: middle;">
+        <span style="display:block; font-size:8px; font-weight:bold; color:#c0932a; text-transform:uppercase; letter-spacing:0.14em; margin-bottom:4px;">Pickup</span>
+        <span style="font-size:12.5px; font-weight:bold; color:#ffffff; line-height:1.35;">{{ quotation.start_location }}</span>
+      </td>
+      <td bgcolor="#1a1a2e" style="width:50px; text-align:center; vertical-align:middle; font-size:22px; color:#c0932a; font-weight:bold;">
+        &#8594;
+      </td>
+      <td bgcolor="#1a1a2e" style="padding: 16px 20px; vertical-align: middle;">
+        <span style="display:block; font-size:8px; font-weight:bold; color:#c0932a; text-transform:uppercase; letter-spacing:0.14em; margin-bottom:4px;">Destination</span>
+        <span style="font-size:12.5px; font-weight:bold; color:#ffffff; line-height:1.35;">{{ quotation.end_location }}</span>
+      </td>
+    </tr>
+  </table>
+
+  <!-- TOTAL -->
+  <table class="total-table">
+    <tr>
+      <td>
+        <div class="total-lbl">Estimated Total</div>
+        <div class="total-sub">Subject to change based on final itinerary</div>
+      </td>
+      <td>
+        <div class="total-amt">${{ "%.2f"|format(quotation.total_price) }}</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- INSTRUCTIONS -->
+  <div class="section-label">Trip Instructions</div>
+  <table class="instr-table">
+    <tr>
+      <td>
+        <span class="instr-lbl">&#128205; Pickup Instructions</span>
+        <div class="instr-box">{{ quotation.pickup_instructions or 'No instructions provided.' }}</div>
+      </td>
+      <td>
+        <span class="instr-lbl">&#127937; Destination Instructions</span>
+        <div class="instr-box">{{ quotation.destination_instructions or 'No instructions provided.' }}</div>
+      </td>
+    </tr>
+  </table>
+
+  <hr class="rule-thin">
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer-lbl">Terms &amp; Conditions</div>
+  <div class="disclaimer-box">
+    Group is responsible for one non-smoking hotel room for the driver during overnight stays.
+    Hotel must be able to accommodate parking for a 45&apos; motorcoach.
+    Group is responsible for all parking and entrance fees incurred on this trip.
+    Rate is subject to change based on the final itinerary.
+  </div>
+
+  <!-- FOOTER -->
+  <table class="footer-table">
+    <tr>
+      <td>
+        <div class="footer-thank">Thank you for choosing us.</div>
+      </td>
+      <td>
+        <div class="footer-brand">Anaman Concierge Services</div>
+        <div class="footer-tagline">Premium Charter &amp; Transportation</div>
+      </td>
+    </tr>
+  </table>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trip Price Estimator</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; background: #f4f7fa; }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 2rem; }
+    .form-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .form-group { margin-bottom: 1.2rem; }
+    .full-width { grid-column: span 2; }
+    label { display: block; margin-bottom: 0.4rem; font-weight: bold; color: #34495e; }
+    input, select, textarea { width: 100%; padding: 0.6rem; box-sizing: border-box; border: 1px solid #bdc3c7; border-radius: 4px; font-family: Arial, sans-serif; font-size: 0.95rem; }
+    textarea { resize: vertical; min-height: 80px; }
+    button { padding: 0.8rem 1.5rem; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1.05rem; transition: background 0.3s; }
+    button:hover { background: #2980b9; }
+    .result-box { margin-top: 2.5rem; padding: 1.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .error { color: #c0392b; font-weight: bold; text-align: center; }
+    .total { font-size: 1.5rem; font-weight: bold; margin-top: 1.5rem; color: #27ae60; }
+    .leg { margin: 1.2rem 0; padding: 1rem; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #3498db; }
+    #fetch-distance { background: #e67e22; }
+    #fetch-distance:hover { background: #d35400; }
+    .hidden { display: none; }
+    .toggle-container { grid-column: span 2; text-align: center; margin-bottom: 1.5rem; }
+    .toggle-label { font-size: 1.1rem; color: #34495e; }
+    .toggle { position: relative; display: inline-block; width: 60px; height: 34px; margin: 0 1rem; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #2196F3; }
+    input:checked + .slider:before { transform: translateX(26px); }
+    .model-name { font-weight: bold; color: #2c3e50; }
+    .section-divider { grid-column: span 2; border: none; border-top: 2px dashed #dce1e7; margin: 0.5rem 0 1rem; }
+    .section-heading { grid-column: span 2; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; color: #7f8c8d; margin-bottom: -0.5rem; }
+    #map-container { margin-top: 3rem; }
+    #map { height: 450px; width: 100%; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background: #e9ecef; position: relative; }
+    #map-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #7f8c8d; font-size: 1.1rem; text-align: center; pointer-events: none; }
+  </style>
+  <script async src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap&libraries=places"></script>
+</head>
+<body>
+
+<h1>Trip Price Estimator</h1>
+
+<form method="POST" id="price-form">
+  <div class="toggle-container">
+    <span class="toggle-label model-name" id="model-left">Go Windstar</span>
+    <label class="toggle">
+      <input type="checkbox" name="pricing_model_toggle" id="pricing-toggle" {% if result and result.pricing_model == 'windstar' %}checked{% endif %}>
+      <span class="slider"></span>
+    </label>
+    <input type="hidden" name="pricing_model" id="pricing-model" value="{% if result and result.pricing_model == 'windstar' %}windstar{% else %}gowindstar{% endif %}">
+    <span class="toggle-label model-name" id="model-right">Windstar</span>
+  </div>
+
+  <div class="form-container">
+
+    <!-- ── CLIENT & PASSENGER INFO ── -->
+    <p class="section-heading">Client & Passengers</p>
+
+    <div class="form-group">
+      <label for="client">Client</label>
+      <input type="text" name="client" id="client" placeholder="e.g. Acme Corp / John Smith" value="{{ result.client if result else '' }}">
+    </div>
+
+    <div class="form-group">
+      <label for="passengers">Passengers</label>
+      <input type="number" name="passengers" id="passengers" min="1" placeholder="e.g. 12" value="{{ result.passengers if result else '' }}">
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ── TRIP DETAILS ── -->
+    <p class="section-heading">Trip Details</p>
+
+    <div class="form-group">
+      <label>Trip Type</label>
+      <select name="trip_type" id="trip-type" required>
+        <option value="oneway" {% if result and result.trip_type == 'oneway' %}selected{% endif %}>One-way</option>
+        <option value="roundtrip" {% if result and result.trip_type == 'roundtrip' %}selected{% endif %}>Round-trip</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" name="date" id="date" value="{{ result.date if result else '' }}">
+    </div>
+
+    <div class="form-group">
+      <label>Start Time</label>
+      <input type="time" name="start_time" id="start-time" value="{{ result.start_time if result else '' }}">
+    </div>
+
+    <div class="form-group">
+      <label>Start Location</label>
+      <input type="text" name="start_location" id="start-location" placeholder="e.g. Eastern Iowa International Airport" value="{{ result.start_location if result else '' }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>End Location</label>
+      <input type="text" name="end_location" id="end-location" placeholder="e.g. Double Tree by Hilton, Cedar Rapids" value="{{ result.end_location if result else '' }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>Miles (Outbound)</label>
+      <input type="number" name="miles" id="miles" step="0.1" min="0" value="{{ result.one_way.miles if result else '' }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>Estimated Hours (Outbound Driving Time)</label>
+      <input type="number" name="hours" id="hours" step="0.1" min="0" value="{{ result.one_way.hours if result else '' }}" required>
+    </div>
+
+    <div id="roundtrip-fields" class="hidden full-width" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+      <div class="form-group">
+        <label>Miles (Return)</label>
+        <input type="number" name="return_miles" id="return-miles" step="0.1" min="0" value="{{ result.return_leg.miles if result and result.return_leg else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Estimated Hours (Return Driving Time)</label>
+        <input type="number" name="return_hours" id="return-hours" step="0.1" min="0" value="{{ result.return_leg.hours if result and result.return_leg else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Wait Time at Destination (hours)</label>
+        <input type="number" name="wait_time" id="wait-time" step="0.1" min="0" value="{{ result.return_leg.wait_time if result and result.return_leg else '0' }}">
+      </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ── INSTRUCTIONS ── -->
+    <p class="section-heading">Instructions</p>
+
+    <div class="form-group full-width">
+      <label for="pickup_instructions">Pickup Instructions</label>
+      <textarea name="pickup_instructions" id="pickup_instructions" placeholder="e.g. Meet at Terminal 2 arrivals, look for the Windstar sign. Contact driver 10 mins before landing.">{{ result.pickup_instructions if result else '' }}</textarea>
+    </div>
+
+    <div class="form-group full-width">
+      <label for="destination_instructions">Destination Instructions</label>
+      <textarea name="destination_instructions" id="destination_instructions" placeholder="e.g. Drop off at the main hotel entrance. Assist passengers with luggage.">{{ result.destination_instructions if result else '' }}</textarea>
+    </div>
+
+    <hr class="section-divider">
+
+    <button type="button" id="fetch-distance" class="full-width">Fetch Distance &amp; Time (Google Maps)</button>
+    <button type="submit" class="full-width">Calculate Price</button>
+
+  </div>
+</form>
+
+{% if error %}
+  <p class="error">{{ error }}</p>
+{% endif %}
+
+{% if result %}
+  <div class="result-box">
+    <h2>Price Estimate — {{ result.start_location }} → {{ result.end_location }} ({{ result.pricing_model }})</h2>
+
+    {% if result.client %}
+      <p><strong>Client:</strong> {{ result.client }} &nbsp;|&nbsp; <strong>Passengers:</strong> {{ result.passengers }}</p>
+    {% endif %}
+
+    <div class="leg">
+      <strong>Outbound leg</strong><br>
+      {{ result.one_way.miles }} miles • {{ result.one_way.hours }} hours<br>
+      <strong>Price: ${{ "%.2f"|format(result.one_way.price) }}</strong>
+    </div>
+
+    {% if result.trip_type == 'roundtrip' %}
+      <div class="leg">
+        <strong>Return leg</strong><br>
+        {{ result.return_leg.miles }} miles • {{ result.return_leg.hours }} driving hours + {{ result.return_leg.wait_time }} wait hours = {{ result.return_leg.effective_hours }} total hours<br>
+        <strong>Price: ${{ "%.2f"|format(result.return_leg.price) }}</strong>
+      </div>
+    {% endif %}
+
+    <div class="total">
+      Total Estimated Price: ${{ "%.2f"|format(result.total_price) }}
+      {% if result.trip_type == 'roundtrip' %} (both ways){% endif %}
+    </div>
+
+    <hr style="margin: 1.5rem 0;">
+  </div>
+
+  <form method="POST" action="/save_quotation" style="margin-top:20px" target="_blank">
+    <input type="hidden" name="pricing_model" value="{{ result.pricing_model }}">
+    <input type="hidden" name="start_location" value="{{ result.start_location }}">
+    <input type="hidden" name="end_location" value="{{ result.end_location }}">
+    <input type="hidden" name="date" value="{{ result.date }}">
+    <input type="hidden" name="start_time" value="{{ result.start_time }}">
+    <input type="hidden" name="trip_type" value="{{ result.trip_type }}">
+    <input type="hidden" name="miles" value="{{ result.one_way.miles }}">
+    <input type="hidden" name="hours" value="{{ result.one_way.hours }}">
+    <input type="hidden" name="one_way_price" value="{{ result.one_way.price }}">
+    <input type="hidden" name="total_price" value="{{ result.total_price }}">
+    <input type="hidden" name="base_rate" value="{{ result.one_way.base_rate }}">
+    <input type="hidden" name="hour_rate" value="{{ result.one_way.hour_rate }}">
+    <input type="hidden" name="client" value="{{ result.client }}">
+    <input type="hidden" name="passengers" value="{{ result.passengers }}">
+    <input type="hidden" name="pickup_instructions" value="{{ result.pickup_instructions }}">
+    <input type="hidden" name="destination_instructions" value="{{ result.destination_instructions }}">
+    {% if result.return_leg %}
+      <input type="hidden" name="return_miles" value="{{ result.return_leg.miles }}">
+      <input type="hidden" name="return_hours" value="{{ result.return_leg.hours }}">
+      <input type="hidden" name="wait_time" value="{{ result.return_leg.wait_time }}">
+      <input type="hidden" name="return_price" value="{{ result.return_leg.price }}">
+    {% endif %}
+    <button type="submit" style="background:#27ae60; color:white; padding:12px 20px; font-size:1.1rem;">
+      💾 Save as Quotation (Charter ID)
+    </button>
+  </form>
+{% endif %}
+
+<div id="map-container">
+  <div id="map">
+    <div id="map-placeholder">Map will appear here once start and end locations are entered</div>
+  </div>
+</div>
+
+<script>
+  let map, directionsService, directionsRenderer;
+
+  function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: { lat: 41.685734, lng: -91.599709 },
+      zoom: 11,
+      gestureHandling: 'greedy'
+    });
+
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer({
+      map: map,
+      suppressMarkers: false,
+      polylineOptions: {
+        strokeColor: '#2c3e50',
+        strokeOpacity: 0.8,
+        strokeWeight: 6
+      }
+    });
+
+    document.getElementById('map-placeholder').style.display = 'none';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const tripTypeSelect = document.getElementById('trip-type');
+    const roundtripFields = document.getElementById('roundtrip-fields');
+    const fetchButton = document.getElementById('fetch-distance');
+    const startInput = document.getElementById('start-location');
+    const endInput = document.getElementById('end-location');
+
+    // Toggle round-trip fields
+    function toggleRoundtripFields() {
+      roundtripFields.classList.toggle('hidden', tripTypeSelect.value !== 'roundtrip');
+    }
+    tripTypeSelect.addEventListener('change', toggleRoundtripFields);
+    toggleRoundtripFields();
+
+    // Pricing model toggle
+    const toggle = document.getElementById('pricing-toggle');
+    const modelInput = document.getElementById('pricing-model');
+    const modelLeft = document.getElementById('model-left');
+    const modelRight = document.getElementById('model-right');
+
+    toggle.addEventListener('change', () => {
+      modelInput.value = toggle.checked ? 'windstar' : 'gowindstar';
+      modelLeft.style.color = toggle.checked ? '#bdc3c7' : '#2c3e50';
+      modelRight.style.color = toggle.checked ? '#2c3e50' : '#bdc3c7';
+    });
+    modelLeft.style.color = toggle.checked ? '#bdc3c7' : '#2c3e50';
+    modelRight.style.color = toggle.checked ? '#2c3e50' : '#bdc3c7';
+
+    // Fetch distance button
+    fetchButton.addEventListener('click', async () => {
+      const data = {
+        start_location: startInput.value,
+        end_location: endInput.value,
+        trip_type: tripTypeSelect.value,
+        date: document.getElementById('date').value,
+        start_time: document.getElementById('start-time').value
+      };
+
+      try {
+        const response = await fetch('/fetch_distance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) throw await response.json();
+
+        const result = await response.json();
+
+        document.getElementById('miles').value = result.outbound?.miles || '';
+        document.getElementById('hours').value = result.outbound?.hours || '';
+
+        if (tripTypeSelect.value === 'roundtrip' && result.return) {
+          document.getElementById('return-miles').value = result.return.miles || '';
+          document.getElementById('return-hours').value = result.return.hours || '';
+        }
+
+        updateMap();
+
+      } catch (err) {
+        alert(err.error || 'Failed to fetch distance/time');
+      }
+    });
+
+    // Real-time map updates
+    let debounceTimer;
+    function debounceUpdate() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(updateMap, 600);
+    }
+
+    startInput.addEventListener('input', debounceUpdate);
+    endInput.addEventListener('input', debounceUpdate);
+    tripTypeSelect.addEventListener('change', updateMap);
+
+    function updateMap() {
+      const start = startInput.value.trim();
+      const end = endInput.value.trim();
+
+      if (!start || !end || !directionsService) {
+        directionsRenderer.setDirections({ routes: [] });
+        return;
+      }
+
+      const request = {
+        origin: start,
+        destination: end,
+        travelMode: google.maps.TravelMode.DRIVING,
+        provideRouteAlternatives: false
+      };
+
+      directionsService.route(request, (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          directionsRenderer.setDirections(result);
+        } else {
+          console.warn('Directions failed:', status);
+          directionsRenderer.setDirections({ routes: [] });
+        }
+      });
+    }
+
+    setTimeout(updateMap, 800);
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+<h1>Saved Quotations</h1>
+<table border="1" cellpadding="10" style="width:100%" >
+  <tr><th>Charter ID</th><th>Date</th><th>Route</th><th>Total</th><th>Download</th></tr>
+  {% for q in quotations %}
+  <tr>
+    <td><strong>{{ q.charter_id }}</strong></td>
+    <td>{{ q.created_at.strftime('%b %d, %Y') }}</td>
+    <td>{{ q.start_location }} → {{ q.end_location }}</td>
+    <td>${{ "%.2f"|format(q.total_price) }}</td>
+    <td><a href="{{ url_for('download_quotation', charter_id=q.charter_id) }}" target="_blank">📄 PDF</a></td>
+  </tr>
+  {% endfor %}
+</table>
